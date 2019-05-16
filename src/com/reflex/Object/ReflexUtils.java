@@ -128,7 +128,7 @@ public class ReflexUtils {
 		 Map<String, Map<Integer, List<Object>>> map=new HashMap<>();
 		 map.put("namemap", new HashMap<Integer,List<Object>>());
 		 map.put("valuemap", new HashMap<>());
-		 return getObjectByNameValueImpMap(entity, map, 0);
+		 return getObjectByNameValueImpMap(entity, map, 1);
 	}
 	
 	@SuppressWarnings("unchecked")

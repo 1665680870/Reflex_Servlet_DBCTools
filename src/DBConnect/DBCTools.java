@@ -392,7 +392,7 @@ public class DBCTools {
 		return update(parseSQL(sql,fieldSize), fieldSize);
 	}
 	public int update(String sql,String tableName){
-		return update(sql, tableName);
+		return update(sql, new String[]{tableName});
 	}
 	
 	public int deleteId(Integer id,String tableName){

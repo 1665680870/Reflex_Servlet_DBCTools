@@ -24,10 +24,12 @@ public class ServletTookit {
 	private InstanceReflexParse reflexParse=null;
 	private static ServletTookit servletTookit=null;
 	public Map<String, HttpSession> httpSession=null;
+	public Map<String, Object> repository=null;
 	
 	private ServletTookit(InstanceReflexParse reflexParse) {
 		this.reflexParse=reflexParse;
 		httpSession=new HashMap<>();
+		repository=new HashMap<>();
 	}
 	public synchronized static ServletTookit geServletTookit(InstanceReflexParse reflexParse) {
 		if (servletTookit==null) {
@@ -35,6 +37,18 @@ public class ServletTookit {
 		}
 		return servletTookit;
 	}
+	
+	public void saveStory(String onlyId,Object object){
+		repository.put(onlyId, object);
+	}
+	public Object getStory(String onlyId){
+		return repository.get(onlyId);
+	}
+	public void removeStory(String onlyId){
+		repository.remove(onlyId);
+	}
+	
+	
 	
 	public List<Object> getServletValues(HttpServletRequest request,boolean isGet) {
 		List<Object> objects=new ArrayList<>();

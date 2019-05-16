@@ -35,7 +35,7 @@ public class UpdateDBC {
 				while (resultSet.next()) {
 					if(name.get(i).equals(resultSet.getString("field"))){
 						if("id".equalsIgnoreCase(name.get(i).toString())){
-							if(value.get(i)==null||"0".equals(value.get(i))){
+							if(value.get(i)==null||"0".equals(value.get(i).toString())){
 								isId=-1;
 							}else{
 								isId=i;
@@ -81,10 +81,9 @@ public class UpdateDBC {
 			mainId.put(TableName.toLowerCase(), dbcTools.getId());
 		}
 		
-		
 	}
 	public void setObjectByName(Object entity,String...tableName) throws Exception{
-		String TableName=getTableName(entity, tableName);
+		String TableName=getTableName(entity.getClass(), tableName);
 		
 		Map<String, Map<Integer, List<Object>>> objectByNamemapValuemap = reflexParse.getObjectNameValueMap(entity);
 		Map<String, String> tableId=new HashMap<>();
@@ -119,7 +118,7 @@ public class UpdateDBC {
 	}
 	
 	public <T> T getSingeByName(Integer id,T entity,String...tableName) throws Exception{
-		String TableName=getTableName(entity, tableName);
+		String TableName=getTableName(entity.getClass(), tableName);
 		if(TableName==null||id==null)return null;
 		
 		Map<String, List<Object>> map = parsefield(TableName, id);
@@ -174,14 +173,14 @@ public class UpdateDBC {
 	
 	
 	
-	private String getTableName(Object entity,String...tableName){
+	private String getTableName(Class<?> entity,String...tableName){
 		if(entity==null){
 			return null;
 		}
 		if (tableName.length>0) {
 			return tableName[0];
 		}else {
-			return entity.getClass().getSimpleName();
+			return entity.getSimpleName();
 		}
 	}
 	
