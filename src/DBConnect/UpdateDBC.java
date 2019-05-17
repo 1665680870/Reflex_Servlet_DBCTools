@@ -1,6 +1,7 @@
 package DBConnect;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,12 +43,21 @@ public class UpdateDBC {
 							}
 						}else{
 							if(value.get(i)==null)continue;
+							
 							if (flag) {
-								tableValue+="'"+value.get(i)+"'";
+								if(value.get(i).getClass().isArray()){
+									tableValue+="'"+reflexParse.ArrayToString((Object[])value.get(i)) +"'";
+								}else{
+									tableValue+="'"+value.get(i)+"'";
+								}
 								tableField+=name.get(i);
 								flag=false;
 							}else {
-								tableValue+=",'"+value.get(i)+"'";
+								if(value.get(i).getClass().isArray()){
+									tableValue+=",'"+reflexParse.ArrayToString((Object[])value.get(i))+"'";
+								}else{
+									tableValue+=",'"+value.get(i)+"'";
+								}
 								tableField+=","+name.get(i);
 							}
 						}
@@ -122,8 +132,31 @@ public class UpdateDBC {
 		if(TableName==null||id==null)return null;
 		
 		Map<String, List<Object>> map = parsefield(TableName, id);
-		return reflexParse.setObjectByName(map.get("name"),map.get("value"),entity);
+		
+		reflexParse.setObjectByName(map.get("name"),map.get("value"),entity);
+		
+		List<Field> fields = reflexParse.getFieldByTypeAdmin(List.class, entity.getClass());
+		if(fields==null)return entity;
+		for (Field field : fields) {
+			ParameterizedType type=(ParameterizedType) field.getGenericType();
+			Class<?> entityC=(Class<?>) type.getActualTypeArguments()[0];
+			if(reflexParse.isContain(entityC))continue;
+			
+			List<Object> list=new ArrayList<>();
+			
+			Object[] arrId = dbcTools.getArrayInfo("id", "`"+TableName+".id`="+id, field.getName());
+			for (Object idr : arrId) {
+				map = parsefield(field.getName(), Integer.parseInt(idr.toString()));
+				list.add(reflexParse.setObjectByName(map.get("name"),map.get("value"),entityC.newInstance()));
+			}
+			
+			field.set(entity, list);
+		}
+		
+		return entity;
 	}
+	
+
 	
 	private Map<String, List<Object>> parsefield(String tableName,Integer id){
 		Map<String, List<Object>> map=new HashMap<>();
@@ -225,8 +258,12 @@ public class UpdateDBC {
 			while(resultSet.next()){
 				ts.add(getSingeByName(resultSet.getInt("id"), entity.newInstance(), TableName));
 			}
+		}catch (NullPointerException e){
+			System.err.println("\n**********结果集为空！请保证输入的表名与数据库表名一致！**********\n");
+			return null;
 		} catch (Exception e) {
 			e.printStackTrace();
+			
 		}
 		
 		return ts;

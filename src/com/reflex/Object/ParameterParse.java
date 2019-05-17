@@ -62,7 +62,7 @@ public class ParameterParse extends ParameterParseOBJ{
 					}		
 				}else{
 					Object newInstance = types.get(i).newInstance();
-					reflexParse.setObjectByName(names[0], values, newInstance);
+					reflexParse.setServletByName(names[0], values, newInstance);
 					object[i]=newInstance;
 				}
 			}else {

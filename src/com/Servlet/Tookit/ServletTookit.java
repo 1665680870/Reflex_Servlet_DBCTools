@@ -80,16 +80,22 @@ public class ServletTookit {
 		return objects;				
 	}
 	
+	
 	public void setServletByName(HttpServletRequest request,Object objectEntity) throws Exception {
-		reflexParse.setObjectByName(getServletNames(request), getServletValues(request, (boolean)request.getAttribute("$isGet")), objectEntity);
+		List<Object> names=getServletNames(request);
+		List<Object> values=getServletValues(request, (boolean)request.getAttribute("$isGet"));
+		
+		reflexParse.setServletByName(names, values, objectEntity);
+		
 	}
+	
 
 
 	public void setServletUploadByName(HttpSession session,Object objectEntity) throws Exception {
 		List<Object> values=((ServletUpload)session.getAttribute("upload")).getValues();
 		List<Object> names=((ServletUpload)session.getAttribute("upload")).getNames();
 
-		reflexParse.setObjectByName(names, values, objectEntity);
+		reflexParse.setServletByName(names, values, objectEntity);
 	}
 	
 	
