@@ -391,10 +391,7 @@ public class DBCTools {
 	public int update(String sql,Integer...fieldSize){
 		return update(parseSQL(sql,fieldSize), fieldSize);
 	}
-	public int update(String sql,String tableName){
-		return update(sql, tableName);
-	}
-	
+
 	public int deleteId(Integer id,String tableName){
 		return delete("id="+id.toString(), tableName);		
 	}
@@ -477,7 +474,7 @@ public class DBCTools {
 			ResultSet resultSet=selectQuery(statement,"select "+columName+" from "+tableName+" where "+condition);
 			try {
 				int i=0;
-				if(resultSet.next()){
+				while(resultSet.next()){
 					object[i]=resultSet.getObject(columName);
 					i++;
 				}

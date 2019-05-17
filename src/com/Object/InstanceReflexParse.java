@@ -85,6 +85,9 @@ public class InstanceReflexParse {
 	public <T> T setObjectByName(List<Object> names,List<Object> value,T entity) throws Exception{
 		return reflexUtils.setObjectByName(names, value, entity);
 	}
+	public <T> T setServletByName(List<Object> names,List<Object> values,T objectEntity) throws Exception{
+		return reflexUtils.setServletByName(names, values, objectEntity);
+	}
 	public Map<String, List<Object>> getObjectNameValue(Object entity) throws Exception{
 		return reflexUtils.getObjectNameValue(entity);
 	}
@@ -100,4 +103,8 @@ public class InstanceReflexParse {
 	public List<Object> ArrayToList(Object[] objects){
 		return reflexUtils.ArrayToList(objects);
 	}
+	public String ArrayToString(Object[] objects,String...split){
+		return reflexUtils.ArrayToString(objects, split);
+	}
+
 }

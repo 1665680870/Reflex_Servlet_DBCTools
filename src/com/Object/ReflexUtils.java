@@ -1,10 +1,14 @@
 package com.reflex.Object;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ReflexUtils {
 	private InstanceReflexParse reflexParse=null;
@@ -22,7 +26,7 @@ public class ReflexUtils {
 				tongji++;
 				if(reflexParse.isContain(field.getType()))
 					field.set(entity, reflexParse.parseObj(field.getType(), value.get(index)));
-				else{
+				else if(!field.getType().equals(List.class)){
 					Object newInstance = field.getType().newInstance();indexmap++;
 					setObjectByName(namemap.get(indexmap), valuemap.get(indexmap), newInstance, indexmap, namemap,valuemap);
 					field.set(entity, newInstance);
@@ -41,6 +45,71 @@ public class ReflexUtils {
 		map.clear();
 		return object;
 	}
+	private List<Integer> getListIndex(List<Object> names){
+		List<Integer> listIndex=new ArrayList<>();
+	
+		for (int i=0;i<names.size();i++) {
+			if(names.get(i).toString().contains(".")){
+				listIndex.add(i);
+			}
+		}
+		return listIndex;
+	}	
+	
+	
+	public <T> T setServletByName(List<Object> names,List<Object> values,T objectEntity) throws Exception{
+		setObjectByName(names, values, objectEntity);
+		
+		List<Field> fields = reflexParse.getFieldByTypeAdmin(List.class, objectEntity.getClass());
+		if(fields==null)return objectEntity;
+		for (Field field : fields) {
+			ParameterizedType type=(ParameterizedType) field.getGenericType();
+			Class<?> entityC=(Class<?>) type.getActualTypeArguments()[0];
+			if(reflexParse.isContain(entityC))continue;
+			
+			List<Object> list=new ArrayList<>();
+			List<Integer> listIndex=getListIndex(names);
+	
+			
+			Map<Integer,List<Object>> nameM=new HashMap<>();
+			Map<Integer,List<Object>> valueM=new HashMap<>();
+			Map<Integer, Object> obj=new HashMap<>();
+			
+			
+			for (Integer integer : listIndex) {
+				String name=names.get(integer).toString();
+				if(field.getName().equals(name.substring(0,name.indexOf(".")))){
+					for(int i=0;i<Array.getLength(values.get(integer));i++){
+						
+						if(obj.get(i)==null){
+							obj.put(i, entityC.newInstance());
+							nameM.put(i, new ArrayList<>());
+							valueM.put(i, new ArrayList<>());
+						}
+						nameM.get(i).add(name.substring(name.indexOf(".")+1));
+						valueM.get(i).add(((Object[])values.get(integer))[i]);
+						
+					}
+					
+				}			
+			}
+			
+			Set<Integer> keySet = obj.keySet();
+			Iterator<Integer> iterator = keySet.iterator();
+			while(iterator.hasNext()){
+				Integer integer=iterator.next();
+				list.add(setObjectByName(nameM.get(integer), valueM.get(integer), obj.get(integer)));
+			}
+			listIndex.clear();nameM.clear();valueM.clear();obj.clear();
+			
+			field.set(objectEntity, list);
+		}
+		
+		
+		return objectEntity;
+	}
+	
+	
 	
 	public Map<String, Map<Integer, List<Object>>> getNameValueMap(List<Object> names,List<Object> values,Object entity){
 		Map<String, Map<Integer, List<Object>>> map=new HashMap<>();
@@ -128,7 +197,7 @@ public class ReflexUtils {
 		 Map<String, Map<Integer, List<Object>>> map=new HashMap<>();
 		 map.put("namemap", new HashMap<Integer,List<Object>>());
 		 map.put("valuemap", new HashMap<>());
-		 return getObjectByNameValueImpMap(entity, map, 0);
+		 return getObjectByNameValueImpMap(entity, map, 1);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -157,4 +226,25 @@ public class ReflexUtils {
 		}
 		return list;
 	}
+	
+	@SuppressWarnings("unused")
+	public String ArrayToString(Object[] objects,String...split){
+		if(objects==null||objects.length==0)return null;
+		
+		String split1=null;
+		if(split1==null||split1.length()<1)split1=",";
+		else split1=split[0];
+		StringBuffer buffer=new StringBuffer();
+		
+		for (Object obj:objects) {
+			buffer.append(obj.toString()+split1);
+		}
+		buffer.deleteCharAt(buffer.length()-1);
+		
+		String info=buffer.toString();
+		buffer.setLength(0);
+		
+		return info;
+	}
+	
 }

@@ -24,10 +24,12 @@ public class ServletTookit {
 	private InstanceReflexParse reflexParse=null;
 	private static ServletTookit servletTookit=null;
 	public Map<String, HttpSession> httpSession=null;
+	public Map<String, Object> repository=null;
 	
 	private ServletTookit(InstanceReflexParse reflexParse) {
 		this.reflexParse=reflexParse;
 		httpSession=new HashMap<>();
+		repository=new HashMap<>();
 	}
 	public synchronized static ServletTookit geServletTookit(InstanceReflexParse reflexParse) {
 		if (servletTookit==null) {
@@ -35,6 +37,18 @@ public class ServletTookit {
 		}
 		return servletTookit;
 	}
+	
+	public void saveStory(String onlyId,Object object){
+		repository.put(onlyId, object);
+	}
+	public Object getStory(String onlyId){
+		return repository.get(onlyId);
+	}
+	public void removeStory(String onlyId){
+		repository.remove(onlyId);
+	}
+	
+	
 	
 	public List<Object> getServletValues(HttpServletRequest request,boolean isGet) {
 		List<Object> objects=new ArrayList<>();
@@ -66,16 +80,22 @@ public class ServletTookit {
 		return objects;				
 	}
 	
+	
 	public void setServletByName(HttpServletRequest request,Object objectEntity) throws Exception {
-		reflexParse.setObjectByName(getServletNames(request), getServletValues(request, (boolean)request.getAttribute("$isGet")), objectEntity);
+		List<Object> names=getServletNames(request);
+		List<Object> values=getServletValues(request, (boolean)request.getAttribute("$isGet"));
+		
+		reflexParse.setServletByName(names, values, objectEntity);
+		
 	}
+	
 
 
 	public void setServletUploadByName(HttpSession session,Object objectEntity) throws Exception {
 		List<Object> values=((ServletUpload)session.getAttribute("upload")).getValues();
 		List<Object> names=((ServletUpload)session.getAttribute("upload")).getNames();
 
-		reflexParse.setObjectByName(names, values, objectEntity);
+		reflexParse.setServletByName(names, values, objectEntity);
 	}
 	
 	

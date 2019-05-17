@@ -44,7 +44,7 @@ public class DispatchServlet extends HttpServlet{
 			
 			init(request,response);
 			servletTookit.setServletMethod(map);		
-			callBack(servletTookit.getMSG(map.get(Thread.currentThread()).getRequest()));
+			callBack(servletTookit.getMSG(map.get(Thread.currentThread()).getRequest()),response);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -62,7 +62,7 @@ public class DispatchServlet extends HttpServlet{
 			if (servletTookit.setServlet(map)) {
 				map.get(Thread.currentThread()).getRequest().getSession().removeAttribute("upload");
 			}
-			callBack(servletTookit.getMSG(map.get(Thread.currentThread()).getRequest()));
+			callBack(servletTookit.getMSG(map.get(Thread.currentThread()).getRequest()),response);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -70,12 +70,14 @@ public class DispatchServlet extends HttpServlet{
 			map.remove(Thread.currentThread());
 		}		
 	}	
-	public void callBack(Object returnValue) throws ServletException, IOException {
+	public void callBack(Object returnValue,HttpServletResponse response) throws ServletException, IOException {
 		if (returnValue!=null) {
 			if (returnValue.toString().toLowerCase().indexOf("f:")!=-1) {
 				request().getRequestDispatcher("../"+returnValue.toString().split("(?i)f:")[1].trim()).forward(request(), response());
 			}else if (returnValue.toString().toLowerCase().indexOf("r:")!=-1){
 				response().sendRedirect(request().getContextPath()+"/"+returnValue.toString().split("(?i)r:")[1].trim());
+			}else{
+				response.getWriter().write(returnValue.toString());
 			}
 		}
 	}
