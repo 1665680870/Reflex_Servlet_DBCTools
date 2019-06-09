@@ -246,5 +246,11 @@ public class ReflexUtils {
 		
 		return info;
 	}
-	
+	public boolean isContainAll(String main,String fit){
+		char[] fits=fit.toCharArray();
+		for (char c : fits) {
+			if(main.indexOf(c)==-1){return false;}
+		}
+		return true;
+	}
 }
