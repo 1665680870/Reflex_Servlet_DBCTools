@@ -19,17 +19,21 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.reflex.Object.InstanceReflexParse;
+import com.security.center.RolePermissionProving;
 
 public class ServletTookit {
 	private InstanceReflexParse reflexParse=null;
+	private RolePermissionProving proving=null;
 	private static ServletTookit servletTookit=null;
 	public Map<String, HttpSession> httpSession=null;
 	public Map<String, Object> repository=null;
 	
 	private ServletTookit(InstanceReflexParse reflexParse) {
 		this.reflexParse=reflexParse;
+		proving=RolePermissionProving.getRolePermission();
 		httpSession=new HashMap<>();
 		repository=new HashMap<>();
+
 	}
 	public synchronized static ServletTookit geServletTookit(InstanceReflexParse reflexParse) {
 		if (servletTookit==null) {
@@ -110,11 +114,28 @@ public class ServletTookit {
 		
 		String action=request.getRequestURL().toString();
 		action=action.substring(action.lastIndexOf("/")+1,action.length());	
-		Method method=reflexParse.getMethod(action, map.get(Thread.currentThread()).getObject());
-
-		request.setAttribute("returnValue", method.invoke(map.get(Thread.currentThread()).getObject(), reflexParse.parseObjectMethod(method, getServletValues(request,(boolean)request.getAttribute("$isGet")),getServletNames(request))));
-
+		Boolean isproving=proving.isProving.get(Thread.currentThread());
+		if(isproving==null)isproving=false;
+		if(isproving){
+			if(proving.provingMethod(action)){
+				if(proving.proving()){
+					enterMethod(action, map.get(Thread.currentThread()).getObject(), request);
+					return;
+				}else{
+					return;
+				}
+			}
+		}
+		enterMethod(action, map.get(Thread.currentThread()).getObject(), request);
+		
 	}
+	private void enterMethod(String action,Object object,HttpServletRequest request)throws Exception{
+		Method method=reflexParse.getMethod(action, object);
+		
+		request.setAttribute("returnValue", method.invoke(object, reflexParse.parseObjectMethod(method, getServletValues(request,(boolean)request.getAttribute("$isGet")),getServletNames(request))));
+	}
+	
+	
 	public Object getMSG(HttpServletRequest request) {		
 		return request.getAttribute("returnValue");
 	}
@@ -131,6 +152,22 @@ public class ServletTookit {
 		
 		String action=request.getRequestURL().toString();
 		action=action.substring(action.lastIndexOf("/")+1,action.length());		
+		
+		Boolean isproving=proving.isProving.get(Thread.currentThread());
+		if(isproving==null)isproving=false;
+		if(isproving){
+			if(proving.provingMethod(action)){
+				if(proving.proving()){
+					return enterServlet(action, map, request);
+				}else{
+					return false;
+				}
+			}
+		}
+		
+		return enterServlet(action, map, request);
+	}
+	private boolean enterServlet(String action,Map<Thread,RQRPF> map,HttpServletRequest request) throws Exception{
 		Method method=reflexParse.getMethod(action, map.get(Thread.currentThread()).getObject());
 
 		try {		
@@ -162,8 +199,9 @@ public class ServletTookit {
 			e.printStackTrace();
 			return true;
 		}
-		
 	}
+	
+	
 	public boolean servletDownload(String fileName,HttpServletRequest request,HttpServletResponse response){
 		File file=new File(request.getServletContext().getRealPath(fileName));
 		if(!file.exists()){return false;}
@@ -204,16 +242,19 @@ public class ServletTookit {
 	public String[] startServletWrite(HttpServletRequest request,String...filePaths) {
 		return ((ServletUpload)request.getSession().getAttribute("upload")).startServletWrite(filePaths);
 	}
-	public long getServletProcess(HttpServletRequest request) {
-		return ((ServletUpload)request.getSession().getAttribute("upload")).getServletProcess();
+	public long getServletCurProcess(HttpServletRequest request) {
+		return ((ServletUpload)request.getSession().getAttribute("upload")).getServletCurProcess();
 	}
-	public long getServletFileSize(HttpServletRequest request) {
-		return ((ServletUpload)request.getSession().getAttribute("upload")).getServletFileSize();
+	public long getServletCurFileSize(HttpServletRequest request) {
+		return ((ServletUpload)request.getSession().getAttribute("upload")).getServletCurFileSize();
 	}
 	public int getServletCurFile(HttpServletRequest request) {
 		return ((ServletUpload)request.getSession().getAttribute("upload")).getServletCurFile();
 	}
 	public long getServletFileSize(HttpServletRequest request,int index){
 		return ((ServletUpload)request.getSession().getAttribute("upload")).getServletFileSize(index);
+	}
+	public int getServletCurCountFile(HttpServletRequest request){
+		return ((ServletUpload)request.getSession().getAttribute("upload")).getServletCurCountFile();
 	}
 }

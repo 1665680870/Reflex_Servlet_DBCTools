@@ -21,10 +21,9 @@ public class UpdateDBC {
 	}
 	
 	private void setObjectByName(List<Object> name,List<Object> value,Object entity,String TableName,Integer indexmap,Map<Integer, List<Object>> namemap,Map<Integer, List<Object>> valuemap,Map<String, String> tableId,Map<String, Integer> mainId) throws Exception{
-		ResultSet resultSet=dbcTools.selectQueryList("desc "+TableName);
+		ResultSet resultSet=dbcTools.selectQueryCache("desc "+TableName);
 		synchronized(this){
 			if(resultSet==null)createTable(TableName, entity);
-			resultSet=dbcTools.selectQueryList("desc "+TableName);
 		}
 		
 		boolean flag=true;
@@ -33,8 +32,9 @@ public class UpdateDBC {
 		for(int i=0;i<value.size();i++){
 			if(value.get(i)==null)continue;
 			if(reflexParse.isContain(value.get(i).getClass())){
+				resultSet=dbcTools.selectQueryCache("desc "+TableName);
 				while (resultSet.next()) {
-					if(name.get(i).equals(resultSet.getString("field"))){
+					if(name.get(i).toString().equalsIgnoreCase(resultSet.getString("field"))){
 						if("id".equalsIgnoreCase(name.get(i).toString())){
 							if(value.get(i)==null||"0".equals(value.get(i).toString())){
 								isId=-1;
@@ -113,7 +113,7 @@ public class UpdateDBC {
 		
 				int Pid=mainId.get(left.substring(0, left.indexOf(".")).toLowerCase());
 				
-				Object value=dbcTools.getInfoById(left.substring(left.indexOf(".")+1), Pid, left.substring(0, left.indexOf(".")));
+				Object value=dbcTools.getSingeInfoById(left.substring(left.indexOf(".")+1), Pid, left.substring(0, left.indexOf(".")));
 
 				
 				if(value!=null)
@@ -211,7 +211,7 @@ public class UpdateDBC {
 			return null;
 		}
 		if (tableName.length>0) {
-			return tableName[0];
+			return tableName[0].split(" ")[0];
 		}else {
 			return entity.getSimpleName();
 		}
@@ -244,7 +244,10 @@ public class UpdateDBC {
 	}
 	
 	private <T> List<T> getListByNameMoudel(Class<T> entity,int index,int size,String...tableName){
-		String TableName=getTableName(entity, tableName);
+		String TableName=null;
+		if(tableName.length>0)TableName=tableName[0];
+		else TableName=entity.getSimpleName();
+		
 		List<T> ts=new ArrayList<>();
 		
 		ResultSet resultSet=null;

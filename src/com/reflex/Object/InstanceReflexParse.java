@@ -106,5 +106,7 @@ public class InstanceReflexParse {
 	public String ArrayToString(Object[] objects,String...split){
 		return reflexUtils.ArrayToString(objects, split);
 	}
-
+	public boolean isContainAll(String main,String fit){
+		return reflexUtils.isContainAll(main, fit);
+	}
 }

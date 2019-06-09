@@ -30,6 +30,7 @@ public class ServletUpload{
 	private long process=0;
 	private long fileSize=0;
 	private int curFile=0;
+	private int countFile=0;
 	private long[] fileSizes;
 	private Map<Integer, FileType> mapFile;
 	private HttpServletRequest request;
@@ -71,6 +72,7 @@ public class ServletUpload{
 		try {
 			@SuppressWarnings("unchecked")
 			List<FileItem> items=upload.parseRequest(request);
+			countFile=items.size();
 			if (items!=null&&!(items.isEmpty())) {
 				int i=1;
 				for (FileItem fileItem : items) {
@@ -214,14 +216,17 @@ public class ServletUpload{
 		return fileName;
 		
 	}
-	public long getServletProcess() {
+	public long getServletCurProcess() {
 		return this.process;
 	}
-	public long getServletFileSize() {
+	public long getServletCurFileSize() {
 		return this.fileSize;
 	}
 	public int getServletCurFile() {
 		return this.curFile;
+	}
+	public int getServletCurCountFile(){
+		return this.countFile;
 	}
 	public long getServletFileSize(int index){
 		try{

@@ -43,25 +43,34 @@ public class Enter implements Filter{
 	
 	public final boolean enter(HttpServletRequest request,String...urls){
 		for(String string:urls){
-			if(request.getRequestURL().toString().contains(request.getContextPath()+"/"+string))return true;
+			String uri=request.getRequestURI();
+			if("*".equals(string)){
+				uri=uri.substring(uri.indexOf("/", uri.indexOf("/")+1)+1);
+				if(!uri.contains(".")||uri.indexOf("/")==-1)return true;
+			}
+			else{
+				if(uri.contains(request.getContextPath()+"/"+string))return true;
+			}
 		}
 		return false;
 	}
 	public final boolean notEnter(HttpServletRequest request,String...urls){
 		for(String string:urls){
-			if(request.getRequestURL().toString().contains(request.getContextPath()+"/"+string))return false;
+			if(request.getRequestURI().contains(request.getContextPath()+"/"+string))return false;
 		}
 		return true;
 	}
 	public final boolean contain(HttpServletRequest request,String...urls){
 		for(String string:urls){
-			if(request.getRequestURL().toString().contains(string))return true;
+			String uri=request.getRequestURI();
+			if(uri.substring(uri.indexOf("/", uri.indexOf("/")+1)+1).contains(string))return true;
 		}
 		return false;
 	}
 	public final boolean notContain(HttpServletRequest request,String...urls){
 		for(String string:urls){
-			if(request.getRequestURL().toString().contains(string))return false;
+			String uri=request.getRequestURI();
+			if(uri.substring(uri.indexOf("/", uri.indexOf("/")+1)+1).contains(string))return false;
 		}
 		return true;
 	}

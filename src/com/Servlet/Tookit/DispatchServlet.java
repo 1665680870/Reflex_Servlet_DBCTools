@@ -12,6 +12,7 @@ import javax.servlet.http.HttpSession;
 
 import com.other.Utils.WebServiceInfo;
 import com.reflex.Object.InstanceReflexParse;
+import com.security.center.RolePermissionProving;
 
 import DBConnect.DBCTools;
 
@@ -21,6 +22,7 @@ public class DispatchServlet extends HttpServlet{
     public ServletTookit servletTookit;
     public DBCTools dbcTools;
     public WebServiceInfo serviceInfo;
+    public RolePermissionProving proving;
     private Map<Thread, RQRPF> map=null;
     
     public DispatchServlet() {
@@ -28,6 +30,7 @@ public class DispatchServlet extends HttpServlet{
     	reflexParse=InstanceReflexParse.getReflexParse();
     	servletTookit=ServletTookit.geServletTookit(reflexParse);
     	serviceInfo=WebServiceInfo.getServiceInfo();
+    	proving=RolePermissionProving.getRolePermission();
     	map=new HashMap<Thread, RQRPF>();
     }
     public HttpServletRequest request(){return RQRPF().getRequest();}
@@ -44,7 +47,7 @@ public class DispatchServlet extends HttpServlet{
 			
 			init(request,response);
 			servletTookit.setServletMethod(map);		
-			callBack(servletTookit.getMSG(map.get(Thread.currentThread()).getRequest()),response);
+			callBack(servletTookit.getMSG(request),response);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -60,9 +63,9 @@ public class DispatchServlet extends HttpServlet{
 			
 			init(request,response);
 			if (servletTookit.setServlet(map)) {
-				map.get(Thread.currentThread()).getRequest().getSession().removeAttribute("upload");
+				request.getSession().removeAttribute("upload");
 			}
-			callBack(servletTookit.getMSG(map.get(Thread.currentThread()).getRequest()),response);
+			callBack(servletTookit.getMSG(request),response);
 			
 		} catch (Exception e) {
 			e.printStackTrace();

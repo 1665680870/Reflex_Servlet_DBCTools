@@ -172,7 +172,10 @@ public class DBCTools {
 			try {		
 				selectPluls();
 				
-				if(sqlcache.containsKey(tableViewName))return sqlcache.get(tableViewName);
+				if(sqlcache.containsKey(tableViewName)){
+					sqlcache.get(tableViewName).beforeFirst();
+					return sqlcache.get(tableViewName);
+				}
 				else{
 					Statement statement=getStatement();
 					sqlcacheStatement.put(tableViewName, statement);
@@ -270,8 +273,10 @@ public class DBCTools {
 			try {
 				selectPluls();
 				
-				if(sqlcache.containsKey(sql))return sqlcache.get(sql);
-				else{
+				if(sqlcache.containsKey(sql)){
+					sqlcache.get(sql).beforeFirst();;
+					return sqlcache.get(sql);
+				}else{
 					Statement statement=getStatement();
 					sqlcacheStatement.put(sql, statement);
 					sqlcache.put(sql,statement.executeQuery(parseSQL(sql,fieldSize)));
@@ -343,7 +348,7 @@ public class DBCTools {
 			}
 		}
 	}
-	public int getId(){
+	public Integer getId(){
 		return tableId.get(Thread.currentThread());
 	}
 	public void removeId(){
@@ -389,7 +394,7 @@ public class DBCTools {
 		}
 	}
 	public int update(String sql,Integer...fieldSize){
-		return update(parseSQL(sql,fieldSize), fieldSize);
+		return update(parseSQL(sql,fieldSize));
 	}
 
 	public int deleteId(Integer id,String tableName){
@@ -402,7 +407,7 @@ public class DBCTools {
 			return 0;
 		}
 	}
-	public Object getInfoById(String columName,int id,String tableName){
+	public Object getSingeInfoById(String columName,int id,String tableName){
 		return getSingeInfo(columName,"id="+id,tableName,1);		
 	}
 	
@@ -465,6 +470,32 @@ public class DBCTools {
 		}
 	}
 	
+	@SuppressWarnings("finally")
+	public Map<Integer, Object[]> getArrayInfos(String columNames,String condition,String tableName){
+		if(isNotConnectNull()){
+			Map<Integer, Object[]> map=new HashMap<>();
+			String[] colums=columNames.split("[,]");
+			
+			Statement statement=getStatement();
+			ResultSet resultSet=selectQuery(statement,"select "+columNames+" from "+tableName+" where "+condition);
+			try {
+				while(resultSet.next()){
+					Object[] values=new Object[colums.length];
+					for (int i=0;i<values.length;i++) {
+						values[i]=resultSet.getObject(colums[i]);
+					}
+					map.put(resultSet.getInt("id"), values);
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}finally{
+				closeQuery(statement, resultSet);
+				return map;
+			}
+		}else{
+			return null;
+		}
+	}
 	
 	@SuppressWarnings("finally")
 	public Object[] getArrayInfo(String columName,String condition,String tableName){
